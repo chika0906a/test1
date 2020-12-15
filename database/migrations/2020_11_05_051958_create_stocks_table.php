@@ -19,7 +19,6 @@ class CreateStocksTable extends Migration
             $table->integer('quantity');
             $table->primary(['mail', 'ingredients_id']);
             $table->timestamps();
-            $table->foreign('mail')->references('mail')->on('generalusers'); 
             $table->foreign('ingredients_id')->references('ingredients_id')->on('ingredients');
         });
     }

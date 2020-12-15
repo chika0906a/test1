@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCompanysupportTable extends Migration
+class CreateCompanysupportsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,13 @@ class CreateCompanysupportTable extends Migration
      */
     public function up()
     {
-        Schema::create('companysupport', function (Blueprint $table) {
-            $table->integer('support_num',4);
-            $table->string('company_mail', 30);
+        Schema::create('companysupports', function (Blueprint $table) {
+            $table->increments('support_num');
+            $table->string('mail', 30);
             $table->string('support_mail', 30);
             $table->date('day');
             $table->text('support_text');
             $table->timestamps();
-            $table->foreign('company_mail')->references('company_mail')->on('companies');
         });
     }
 

@@ -12,7 +12,7 @@ class InfoController extends Controller
         $data = [
             'msg'=>'',
         ];
-        return view('fresh.inputinfo', $data);
+        return view('info.input', $data);
     }
     public function image(Request $request, User $user) {
 
@@ -29,6 +29,7 @@ class InfoController extends Controller
     }
     public function post(Request $request)
     {
+
         $rules = [
             'name' => 'required|max:10',
             'adress' => 'required|max:20',
@@ -46,7 +47,7 @@ class InfoController extends Controller
             'password.required' => 'パスワードは必ず入力して下さい。',
             'password.between' => 'パスワードは8文字以上16文字以内で入力して下さい。',
         ];
-        $validator = Validator::make($request->all(),$rules,$message);
+       // $validator = Validator::make($request->all(),$rules,$message);
         if ($validator->fails()) {
             return redirect('/info')
                 ->withErrors($validator)
@@ -56,7 +57,8 @@ class InfoController extends Controller
         //全データの取得
         $data = $request->all();
 
-        return view('fresh.outputinfo', ['data' => $data]);
+        return view('info.output', ['data' => $data]);
     }
 
 }
+

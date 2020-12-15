@@ -18,7 +18,6 @@ class CreateOrdersTable extends Migration
             $table->char('ingredients_id',5);
             $table->integer('quantity');
             $table->primary(['mail', 'ingredients_id']);
-            $table->foreign('mail')->references('mail')->on('generalusers'); 
             $table->foreign('ingredients_id')->references('ingredients_id')->on('ingredients');
         });
     }

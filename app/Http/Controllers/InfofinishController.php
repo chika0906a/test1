@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Validator;
 
-class InfoController extends Controller
+class InfofinishController extends Controller
 {
     public function index()
     {
         $data = [
             'msg'=>'',
         ];
-        return view('fresh.infofinishinput', $data);
+        return view('infofinish.input', $data);
     }
     public function image(Request $request, User $user) {
 
@@ -48,7 +48,7 @@ class InfoController extends Controller
         ];
         $validator = Validator::make($request->all(),$rules,$message);
         if ($validator->fails()) {
-            return redirect('/jissyu7')
+            return redirect('/infofinish')
                 ->withErrors($validator)
                 ->withInput();
         }
@@ -56,7 +56,7 @@ class InfoController extends Controller
         //全データの取得
         $data = $request->all();
 
-        return view('fresh.infofinishoutput', ['data' => $data]);
+        return view('infofinish.output', ['data' => $data]);
     }
 
 }

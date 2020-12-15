@@ -3,17 +3,42 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\models\info;
 use Validator;
 
-class InfoController extends Controller
+class InfoconfirmController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        //$items = DB::select('select station_name from stations' );
+        //return view('infoconfirm.input', ['items' => $items]);
         $data = [
             'msg'=>'',
         ];
-        return view('fresh.infoconfirminput', $data);
+        return view('infoconfirm.input', $data);
+
     }
+
+    public function info(Request $request)
+    {
+
+        $param = [
+            'mail' => $request->mail,
+            'day' => $request->day,
+            'info_title' => $request->info_title,
+            'info_text' => $request->info_text,
+            'station_id' => $request->station_id,
+        ];
+        DB::table('info')->insert($param);
+
+        return view('infofinish.input');
+    }
+
+
+
+
+
     public function image(Request $request, User $user) {
 
         // バリデーション省略
@@ -46,17 +71,18 @@ class InfoController extends Controller
             'password.required' => 'パスワードは必ず入力して下さい。',
             'password.between' => 'パスワードは8文字以上16文字以内で入力して下さい。',
         ];
-        $validator = Validator::make($request->all(),$rules,$message);
-        if ($validator->fails()) {
-            return redirect('/jissyu7')
-                ->withErrors($validator)
-                ->withInput();
-        }
+        //$validator = Validator::make($request->all(),$rules,$message);
+        //if ($validator->fails()) {
+        //    return redirect('/infoconfirm')
+        //        ->withErrors($validator)
+        //        ->withInput();
+       // }
 
         //全データの取得
         $data = $request->all();
 
-        return view('fresh.infoconfirmoutput', ['data' => $data]);
+        return view('infoconfirm.output', ['data' => $data]);
     }
 
 }
+

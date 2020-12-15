@@ -6,11 +6,9 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements
-CanResetPasswordContract
+class User extends Authenticatable
 {
     use Notifiable;
 
@@ -43,18 +41,5 @@ CanResetPasswordContract
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
-    
-    /**
-    * パスワードリセット通知の送信
-    *
-    * @param  string  $token
-    * @return void
-    */
-
-    public function sendPasswordResetNotification($token)
-    {
-        $this->notify(new ResetPasswordNotification($token));
-    }
 
 }

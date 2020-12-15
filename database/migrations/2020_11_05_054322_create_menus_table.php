@@ -19,9 +19,7 @@ class CreateMenusTable extends Migration
             $table->char('recipe', 5);
             $table->primary(['mail', 'day']);
             $table->timestamps();
-            $table->foreign('mail')->references('mail')->on('generalusers');
             $table->foreign('recipe')->references('recipe')->on('recipetitle');
-            $table->unique(['mail', 'recipe'], 'uq_menus');
         });
     }
 

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateInfoareasTable extends Migration
+class CreateInfoTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,15 @@ class CreateInfoareasTable extends Migration
      */
     public function up()
     {
-        Schema::create('infoareas', function (Blueprint $table) {
-            $table->integer('info_num');
-            $table->char('station_id', 5);
-            $table->primary(['info_num', 'station_id']);
-            $table->foreign('info_num')->references('info_num')->on('info');
+        Schema::create('info', function (Blueprint $table) {
+            $table->increments('info_num');
+            $table->string('mail',30);
+            $table->date('day');
+            $table->string('info_title',20);
+            $table->text('info_text');
+            $table->char('station_id',5);
+            $table->timestamps();
             $table->foreign('station_id')->references('station_id')->on('stations');
-            $table->unique(['info_num', 'station_id'], 'uq_infoareas');
         });
     }
 
@@ -30,6 +32,6 @@ class CreateInfoareasTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('infoarea');
+        Schema::dropIfExists('info');
     }
 }
