@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCompanysupportsTable extends Migration
+class CreateSupportsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class CreateCompanysupportsTable extends Migration
      */
     public function up()
     {
-        Schema::create('companysupports', function (Blueprint $table) {
-            $table->increments('support_num');
+        Schema::create('supports', function (Blueprint $table) {
+            $table->integer('support_num',4);
             $table->string('mail', 30);
             $table->string('support_mail', 30);
             $table->date('day');
@@ -30,6 +30,6 @@ class CreateCompanysupportsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('companysupport');
+        Schema::dropIfExists('supports');
     }
 }

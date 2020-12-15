@@ -66,12 +66,29 @@ class TeamcController extends Controller
         $people_ind = $request->people_ind;
         $gender = $request->gender;
 
+        //性別未選択の場合
+        if($gender == 'noans'){
+            $genderfree = true;
+        }
+
+        //同居人数未選択の場合
+        if($people_ind == 0){
+            $peoplefree = true;
+        }
+
+        //エリア未選択の場合
+        if($area_name == "noarea")
+        {
+            $areafree = true;
+        }
+
         //条件の年代が何歳から何歳までか計算
         $reqage1 = $request->agechoice;
+        $reqage2 = $reqage1 + 10;
+        //年代未選択の場合
         if($reqage1 == 0){
             $agefree = true;
-        } 
-        $reqage2 = $reqage1 + 10;
+        }
         //今日の日付を取得
         $age0 = Carbon::now();
         //条件の年代の誕生日を計算(age1～age2)
@@ -88,7 +105,53 @@ class TeamcController extends Controller
         $history = DB::table('shopping_history');
 
         //条件に合致するデータを購入日付を問わず抽出
+        $item0 = $history
+                ->join('users', 'shopping_history.mail', '=', 'users.email')
+                ->join('areas', 'users.area_id', '=', 'areas.area_id')
+                ->where('shopping_history.ingredients_id', $ingredients_id);
+
+        if($genderfree && $areafree && $agefree && $peoplefree){
+            //全部未選択
+            $item99 = $item0;
+        } elseif($genderfree && $areafree && $agefree && $peoplefree==false){
+            //同居人数だけ選択
+            $item99 = $item0->where('users.people_ind', $people_ind);
+        } elseif($genderfree && $areafree && $agefree==false && $peoplefree){
+            //年代だけ選択
+            $item99 = $item0
+                        ->where('users.date', '>=', $age2)
+                        ->where('users.date', '<=', $age1);
+        } elseif($genderfree && $areafree==false && $agefree && $peoplefree){
+            //エリアだけ選択
+            $item99 = $item0->where('areas.area_name', $area_name);
+        } elseif($genderfree==false && $areafree && $agefree && $peoplefree){
+            //性別だけ選択
+            $item99 = $item0->where('users.gender', $gender);
+        } elseif($genderfree && $areafree && $agefree==false && $peoplefree==false){
+            //年代・同居人数を選択
+            $item99 = $item0
+                        ->where('users.people_ind', $people_ind)
+                        ->where('users.date', '>=', $age2)
+                        ->where('users.date', '<=', $age1);
+        } elseif($genderfree && $areafree==false && $agefree && $peoplefree==false){
+            //エリア・同居人数を選択
+            $item99 = $item0
+                        ->where('areas.area_name', $area_name)
+                        ->where('users.people_ind', $people_ind);
+        } elseif($genderfree==false && $areafree && $agefree && $peoplefree==false){
+            //性別・同居人数を選択
+            $item99 = $item0
+                        ->where('users.gender', $gender)
+                        ->where('users.people_ind', $people_ind);
+        } elseif($genderfree && $areafree==false && $agefree==false && $peoplefree){
+            //エリア・年代を選択
+            $item99 = $item0
+                        ->where('areas.area_name', $area_name)
+                        ->where('users.date', '>=', $age2)
+                        ->where('users.date', '<=', $age1);
+        } 
         if($agefree){
+            //年代だけ未選択
             $items99 = $history
                 ->join('users', 'shopping_history.mail', '=', 'users.email')
                 ->join('areas', 'users.area_id', '=', 'areas.area_id')
@@ -97,6 +160,7 @@ class TeamcController extends Controller
                 ->where('users.people_ind', $people_ind)
                 ->where('users.gender', $gender);
         } else {
+            //全部選択した場合
             $items99 = $history
                     ->join('users', 'shopping_history.mail', '=', 'users.email')
                     ->join('areas', 'users.area_id', '=', 'areas.area_id')
@@ -108,6 +172,15 @@ class TeamcController extends Controller
                     ->where('users.date', '<=', $age1);
         }
         
+
+
+
+
+
+
+
+
+
         //初日のみ格納
         $days[0] = $date1->toDateString();
         $items[0] = $items99->where('shopping_history.day', $date1)->sum('quantity');
