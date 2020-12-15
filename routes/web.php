@@ -25,6 +25,10 @@ Route::post('fresh/generallogin', 'App\Http\Controllers\GeneralController@postAu
 //マイページ表示
 Route::get('fresh/generalmypage', 'App\Http\Controllers\GeneralController@generalmypage');
 
+//一般ユーザー新規登録
+Route::get('signup/add', 'App\Http\Controllers\GeneralController@signupadd');
+Route::post('post/create', 'App\Http\Controllers\GeneralController@signupcreate');
+
 //買い物リストトップ画面表示
 Route::get('fresh/orders', 'App\Http\Controllers\GeneralController@orderstop');
 //買い物リスト追加画面表示
@@ -142,6 +146,11 @@ Route::get('fresh/login', 'App\Http\Controllers\TeamcController@getAuth');
 Route::post('fresh/login', 'App\Http\Controllers\TeamcController@postAuth');
 Route::get('fresh/companymypage', 'App\Http\Controllers\TeamcController@mypage');
 Route::post('fresh/companymypage', 'App\Http\Controllers\TeamcController@mypage');
+
+//企業ユーザー新規登録
+Route::get('new', 'App\Http\Controllers\TeamcController@new');
+Route::post('post/create2', 'App\Http\Controllers\TeamcController@create2');
+
 
 Route::get('fresh/infocomfirm', 'App\Http\Controllers\InfoController@index');
 Route::post('fresh/infocomfirm', 'App\Http\Controllers\InfoController@post');

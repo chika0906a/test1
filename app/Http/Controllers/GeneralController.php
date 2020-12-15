@@ -43,6 +43,20 @@ class GeneralController extends Controller
         return view('fresh.generalmypage');
     }
 
+    public function signupadd(Request $request)
+    {
+        return view('signup.add');  //viewの表示
+    }
+
+    public function signupcreate(Request $request)
+    {
+        $param = [
+            'name' => $request->name,
+            'email' => $request->email,'password' => $request->password,'gender' => $request->gender,'date' => $request->date,'station_id' => $request->station_id,'people_ind' => $request->people_ind,];
+            DB::table('generalusers')->insert($param); 
+            return view('signup.done');
+        }
+
     //買い物リストトップ画面
     public function orderstop(Request $request)
     {

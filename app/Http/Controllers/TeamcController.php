@@ -34,20 +34,20 @@ class TeamcController extends Controller
         return view('fresh.companymypage');
     }
 
-    public function signup() 
+    public function new(Request $request)
     {
-        return view('fresh.signup');
+        return view('company.signup');
     }
-
-    public function signupconfirm(SignupRequest $request)
+    public function create2(Request $request)
     {
-        $data = $request->all();
-        return view('fresh.signupconfirm', ['data' => $data]);
-    }
-
-    public function signupfinish(SignupRequest $request)
-    {
-        return view('fresh.signupfinish');
+        $param = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => $request->password,    
+        ];
+        DB::table('users')->insert($param);
+        
+        return view('signup.done');
     }
 
     public function areachoice()
