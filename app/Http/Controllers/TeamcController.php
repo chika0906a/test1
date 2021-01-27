@@ -66,20 +66,49 @@ class TeamcController extends Controller
         $people_ind = $request->people_ind;
         $gender = $request->gender;
 
-        //性別未選択の場合
+        //性別未選択の場合freeをtrue化
         if($gender == 'noans'){
             $genderfree = true;
+            $selectedgender = "選択しない";
+        } elseif($gender == 'man') {
+            $genderfree = false;
+            $selectedgender = "男性";
+        } else {
+            $genderfree = false;
+            $selectedgender = "女性";
         }
 
-        //同居人数未選択の場合
-        if($people_ind == 0){
-            $peoplefree = true;
+        //同居人数未選択の場合freeをtrue化
+        switch($people_ind){
+            case 0:
+                $peoplefree = true;
+                $selectedpeople = "選択しない";
+                break;
+            case 1:
+                $peoplefree = false;
+                $selectedpeople = "1人暮らし";
+                break;
+            case 2:
+                $peoplefree = false;
+                $selectedpeople = "2人暮らし";
+                break;
+            case 3:
+                $peoplefree = false;
+                $selectedpeople = "3人暮らし";
+                break;
+            case 4:
+                $peoplefree = false;
+                $selectedpeople = "4人暮らし";
+                break;
         }
 
         //エリア未選択の場合
-        if($area_name == "noarea")
-        {
+        if($area_name == "選択しない"){
             $areafree = true;
+            $selectedarea = "選択しない";
+        } else {
+            $areafree = false;
+            $selectedarea = $area_name;
         }
 
         //条件の年代が何歳から何歳までか計算
@@ -88,6 +117,10 @@ class TeamcController extends Controller
         //年代未選択の場合
         if($reqage1 == 0){
             $agefree = true;
+            $selectedage = "選択しない";
+        } else {
+            $agefree = false;
+            $selectedage = $reqage1 . "代";
         }
         //今日の日付を取得
         $age0 = Carbon::now();
@@ -95,111 +128,139 @@ class TeamcController extends Controller
         $age1 = $age0->copy()->subYear($reqage1)->toDateString();
         $age2 = $age0->copy()->subYear($reqage2)->addDay()->toDateString();
 
-        //開始日と終了日から日数を計算
-        $date1 = new Carbon($request->startdate);
-        $date2 = new Carbon($request->enddate);
-        $count = $date1->diffInDays($date2);
-        $i = 1;
-
         //shopping_historyテーブルからデータを取得
-        $history = DB::table('shopping_history');
-
         //条件に合致するデータを購入日付を問わず抽出
-        $item0 = $history
-                ->join('users', 'shopping_history.mail', '=', 'users.email')
-                ->join('areas', 'users.area_id', '=', 'areas.area_id')
+        $item = DB::table('shopping_history')
+                ->join('generalusers', 'shopping_history.mail', '=', 'generalusers.email')
+                ->join('areas', 'generalusers.area_id', '=', 'areas.area_id')
+                ->join('companies', 'shopping_history.company_id', '=', 'companies.company_id')
                 ->where('shopping_history.ingredients_id', $ingredients_id);
+
+        $item0 = $item->where('shopping_history.day', '>=', $request->startdate)
+                      ->where('shopping_history.day', '<=', $request->enddate); 
 
         if($genderfree && $areafree && $agefree && $peoplefree){
             //全部未選択
             $item99 = $item0;
         } elseif($genderfree && $areafree && $agefree && $peoplefree==false){
             //同居人数だけ選択
-            $item99 = $item0->where('users.people_ind', $people_ind);
+            $item99 = $item0->where('generalusers.people_ind', $people_ind);
         } elseif($genderfree && $areafree && $agefree==false && $peoplefree){
             //年代だけ選択
             $item99 = $item0
-                        ->where('users.date', '>=', $age2)
-                        ->where('users.date', '<=', $age1);
+                        ->where('generalusers.birthday', '>=', $age2)
+                        ->where('generalusers.birthday', '<=', $age1);
         } elseif($genderfree && $areafree==false && $agefree && $peoplefree){
             //エリアだけ選択
             $item99 = $item0->where('areas.area_name', $area_name);
         } elseif($genderfree==false && $areafree && $agefree && $peoplefree){
             //性別だけ選択
-            $item99 = $item0->where('users.gender', $gender);
+            $item99 = $item0->where('generalusers.gender', $gender);
         } elseif($genderfree && $areafree && $agefree==false && $peoplefree==false){
-            //年代・同居人数を選択
+            //同居人数・年代を選択
             $item99 = $item0
-                        ->where('users.people_ind', $people_ind)
-                        ->where('users.date', '>=', $age2)
-                        ->where('users.date', '<=', $age1);
+                        ->where('generalusers.people_ind', $people_ind)
+                        ->where('generalusers.birthday', '>=', $age2)
+                        ->where('generalusers.birthday', '<=', $age1);
         } elseif($genderfree && $areafree==false && $agefree && $peoplefree==false){
-            //エリア・同居人数を選択
+            //同居人数・エリアを選択
             $item99 = $item0
                         ->where('areas.area_name', $area_name)
-                        ->where('users.people_ind', $people_ind);
+                        ->where('generalusers.people_ind', $people_ind);
         } elseif($genderfree==false && $areafree && $agefree && $peoplefree==false){
-            //性別・同居人数を選択
+            //同居人数・性別を選択
             $item99 = $item0
-                        ->where('users.gender', $gender)
-                        ->where('users.people_ind', $people_ind);
+                        ->where('generalusers.gender', $gender)
+                        ->where('generalusers.people_ind', $people_ind);
         } elseif($genderfree && $areafree==false && $agefree==false && $peoplefree){
-            //エリア・年代を選択
+            //年代・エリアを選択
             $item99 = $item0
                         ->where('areas.area_name', $area_name)
-                        ->where('users.date', '>=', $age2)
-                        ->where('users.date', '<=', $age1);
-        } 
-        if($agefree){
-            //年代だけ未選択
-            $items99 = $history
-                ->join('users', 'shopping_history.mail', '=', 'users.email')
-                ->join('areas', 'users.area_id', '=', 'areas.area_id')
+                        ->where('generalusers.birthday', '>=', $age2)
+                        ->where('generalusers.birthday', '<=', $age1);
+        } elseif($genderfree==false && $areafree && $agefree==false && $peoplefree){
+            //年代・性別を選択
+            $item99 = $item0
+                        ->where('generalusers.gender', $gender)
+                        ->where('generalusers.birthday', '>=', $age2)
+                        ->where('generalusers.birthday', '<=', $age1);
+        } elseif($genderfree==false && $areafree==false && $agefree && $peoplefree){
+            //エリア・性別を選択
+            $item99 = $item0
+                        ->where('generalusers.area', $area)
+                        ->where('generalusers.gender', $gender);
+        } elseif($genderfree && $areafree==false && $agefree==false && $peoplefree==false){
+            //性別だけ未選択
+            $item99 = $history
+                ->join('generalusers', 'shopping_history.mail', '=', 'generalusers.email')
+                ->join('areas', 'generalusers.area_id', '=', 'areas.area_id')
                 ->where('shopping_history.ingredients_id', $ingredients_id)
                 ->where('areas.area_name', $area_name)
-                ->where('users.people_ind', $people_ind)
-                ->where('users.gender', $gender);
+                ->where('generalusers.people_ind', $people_ind)
+                ->where('generalusers.birthday', '>=', $age2)
+                ->where('generalusers.birthday', '<=', $age1);
+        } elseif($genderfree==false && $areafree && $agefree==false && $peoplefree==false){
+            //エリアだけ未選択
+            $item99 = $history
+                ->join('generalusers', 'shopping_history.mail', '=', 'generalusers.email')
+                ->join('areas', 'generalusers.area_id', '=', 'areas.area_id')
+                ->where('shopping_history.ingredients_id', $ingredients_id)
+                ->where('generalusers.gender', $gender)
+                ->where('generalusers.people_ind', $people_ind)
+                ->where('generalusers.birthday', '>=', $age2)
+                ->where('generalusers.birthday', '<=', $age1);
+        } elseif($genserfree==false && $areafree==false && $agefree && $peoplefree==false){
+            //年代だけ未選択
+            $item99 = $history
+                ->join('generalusers', 'shopping_history.mail', '=', 'generalusers.email')
+                ->join('areas', 'generalusers.area_id', '=', 'areas.area_id')
+                ->where('shopping_history.ingredients_id', $ingredients_id)
+                ->where('areas.area_name', $area_name)
+                ->where('generalusers.people_ind', $people_ind)
+                ->where('generalusers.gender', $gender);
+        } elseif($genserfree==false && $areafree==false && $agefree==false && $peoplefree){
+            //同居人数だけ未選択
+            $item99 = $history
+                ->join('generalusers', 'shopping_history.mail', '=', 'generalusers.email')
+                ->join('areas', 'generalusers.area_id', '=', 'areas.area_id')
+                ->where('shopping_history.ingredients_id', $ingredients_id)
+                ->where('areas.area_name', $area_name)
+                ->where('generalusers.gender', $gender)
+                ->where('generalusers.birthday', '>=', $age2)
+                ->where('generalusers.birthday', '<=', $age1);
         } else {
             //全部選択した場合
-            $items99 = $history
-                    ->join('users', 'shopping_history.mail', '=', 'users.email')
-                    ->join('areas', 'users.area_id', '=', 'areas.area_id')
+            $item99 = $history
+                    ->join('generalusers', 'shopping_history.mail', '=', 'generalusers.email')
+                    ->join('areas', 'generalusers.area_id', '=', 'areas.area_id')
                     ->where('shopping_history.ingredients_id', $ingredients_id)
                     ->where('areas.area_name', $area_name)
-                    ->where('users.people_ind', $people_ind)
-                    ->where('users.gender', $gender)
-                    ->where('users.date', '>=', $age2)
-                    ->where('users.date', '<=', $age1);
+                    ->where('generalusers.people_ind', $people_ind)
+                    ->where('generalusers.gender', $gender)
+                    ->where('generalusers.birthday', '>=', $age2)
+                    ->where('generalusers.birthday', '<=', $age1);
         }
-        
-
-
-
-
-
-
-
-
-
-        //初日のみ格納
-        $days[0] = $date1->toDateString();
-        $items[0] = $items99->where('shopping_history.day', $date1)->sum('quantity');
-
-        //購入日付ごとに足し、$items配列に格納
-        while($i <= $count)
-        {
-            $day = $date1->addDay(1);
-            $days[$i] = $day->toDateString();
-            $items[$i] = $items99->where('shopping_history.day', $day)
-                        ->sum('quantity');
-            $i = $i + 1;
-        }
+  
+        //店舗ごとに販売数量を求める
+        $shopquantity = $item99
+                        ->selectRaw('companies.company_name, sum(shopping_history.quantity) as total')
+                        ->groupBy('shopping_history.company_id')
+                        ->latest('total')
+                        ->get();
 
         //食材IDから食材名を取得
         $param1 = ['ingredients_id' => $request->ingredients_id];
-        $name = DB::select('SELECT ingredients_name FROM ingredients WHERE ingredients_id = :ingredients_id', $param1);
+        $names = DB::select('SELECT ingredients_name FROM ingredients WHERE ingredients_id = :ingredients_id', $param1);
 
-        return view('fresh.area.output', ['items' => $items, 'name' => $name, 'days' => $days]);
+        //入力された選択肢を取得
+        $selected = array('startdate' => $request->startdate,
+                          'enddate' => $request->enddate,
+                          'gender' => $selectedgender,
+                          'people' => $selectedpeople,
+                          'area' => $selectedarea,
+                          'age' => $selectedage);
+
+        return view('fresh.area.output', ['shopquantity' => $shopquantity, 'names' => $names, 'selected' => $selected]);
     }
     
     public function companysupport()
@@ -225,22 +286,6 @@ class TeamcController extends Controller
         ];
         DB::table('companysupports')->insert($param);
         return view('fresh.companysupportfinish', ['data' => $data]);
-    }
-
-    public function resetmail()
-    {
-        return view('fresh.resetmail');
-    }
-
-    public function resetmailconfirm(ResetmailRequest $request)
-    {
-        $data = $request->all();
-        return view('fresh.resetmailconfirm', ['data' => $data]);
-    }
-
-    public function resetmailfinish()
-    {
-        return view('fresh.resetmailfinish');
     }
     
 }

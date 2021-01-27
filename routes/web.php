@@ -184,7 +184,8 @@ Route::post('password/reset', 'Auth\ResetPasswordController@reset');
 
 
 Route::get('hello', 'App\Http\Controllers\HelloController@index');
-
+Route::get('/hello/json', 'App\Http\Controllers\HelloController@json');
+Route::get('/hello/json/{id}', 'App\Http\Controllers\HelloController@json');
 
 Auth::routes();
 
