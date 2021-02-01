@@ -287,5 +287,35 @@ class TeamcController extends Controller
         DB::table('companysupports')->insert($param);
         return view('fresh.companysupportfinish', ['data' => $data]);
     }
+
+    public function infohistory(Request $request)
+    {
+
+        //企業マイページにお知らせ送信履歴を表示するSQL文
+        $param = ['company_mail' => $request->company_mail];
+        $items = DB::select('SELECT DISTINCT name, info_title, info_text, day
+            FROM info, companies, generalusers
+                WHERE info.mail = companies.company_mail AND
+                info.station_id = generalusers .station_id AND 
+                companies.company_mail = :company_mail', $param);
+                $param = ['mail' => $request->session()->get('usermail')];
+
+        return view('fresh.infohistory', ['items' => $items]);
+
+        $data = [
+            'msg'=>'必要事項を記入してください。',
+        ];
+        return view('fresh.infohistory', $data);
+    }
+
+    public function post(Request $request)
+    {
+        $data = [
+            'name'=>$request->name,
+            'mail'=>$request->mail,
+            'age'=>$request->age
+        ];
+        return view('fresh.infohistoryoutput', ['data'=>$data]);
+    }
     
 }

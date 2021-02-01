@@ -38,9 +38,18 @@ class GeneralController extends Controller
         }
     }
 
-    public function generalmypage()
+    public function generalmypage(Request $request)
     {
-        return view('fresh.generalmypage');
+        //station_idごとにお知らせを表示(ex.横浜駅の近くに住んでいる人に対し横浜駅周辺のお店の情報を送る。)
+        //ユーザーのメールアドレスを取得
+        $param = ['email' => $request->session()->get('usermail')];
+        $items = DB::select('SELECT DISTINCT company_name, info_title, info_text, day
+            FROM info, companies, generalusers
+                WHERE info.mail = companies.company_mail AND
+                info.station_id = generalusers.station_id AND 
+                generalusers.email = :email', $param);
+                $param = ['mail' => $request->session()->get('usermail')];
+        return view('fresh.generalmypage', ['items' => $items]);
     }
 
     public function signupadd(Request $request)
@@ -145,24 +154,48 @@ class GeneralController extends Controller
     {
         //ユーザーのメールアドレスを取得
         $mail = $request->session()->get('usermail');
-        $day = now()->format('Y-m-d');
         //チェックされた食材の配列を取得
         $items2 = $request->input('itemsarray');
         //食材分ループし、削除
         foreach((array)$items2 as $item2){
-            $param = [
-                'mail' => $mail,
-                'day' => $day,
-                'ingredients_id' => $item2,
-                'quantity' => $request->quantity[$item2],
-            ];
-            DB::table('shopping_history')->insert($param);
             DB::delete("delete from orders where ingredients_id = '$item2' and mail = '$mail'");
         };
         //買い物リストトップ画面にリダイレクト
         return redirect('/fresh/orders');
     }
 
+    //買い物リストの購入チェック画面を表示
+    public function ordersbuy(Request $request){
+        //ユーザーのメールアドレスを取得
+        $param = ['mail' => $request->session()->get('usermail')];
+        //ユーザー毎の買い物リストのデータを抽出
+        $items = DB::select('select * from orders inner join ingredients on orders.ingredients_id = ingredients.ingredients_id where orders.mail = :mail', $param);
+        return view('fresh.order.orderbuy', ['items' => $items]);
+    }
+
+    //買い物リストの購入チェック
+    public function ordersbuycheck(Request $request){
+        //ユーザーのメールアドレスを取得
+        $mail = $request->session()->get('usermail');
+        $day = now()->format('Y-m-d');
+        //チェックされた食材の配列を取得
+        $items2 = $request->input('itemsarray');
+        //食材分ループし、削除
+        foreach((array)$items2 as $item2){
+            $company_id = DB::table('companies')->select('company_id')->where('company_name', $request->company_name);
+            $param = [
+                'mail' => $mail,
+                'day' => $day,
+                'ingredients_id' => $item2,
+                'quantity' => $request->quantity[$item2],
+                'company_id' => $company_id,
+            ]; 
+            DB::table('shopping_history')->insert($param);
+            DB::delete("delete from orders where ingredients_id = '$item2' and mail = '$mail'");
+        };
+        //買い物リストトップ画面にリダイレクト
+        return redirect('/fresh/orders');
+    }
     //冷蔵庫の在庫一覧
     public function stocktop(Request $request)
     {

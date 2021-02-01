@@ -49,6 +49,11 @@ Route::post('fresh/ordercreate', 'App\Http\Controllers\GeneralController@ordercr
 Route::get('fresh/ordersdel', 'App\Http\Controllers\GeneralController@ordersdel');
 //買い物リストから削除
 Route::post('fresh/ordersdel', 'App\Http\Controllers\GeneralController@ordersremove');
+//買い物リスト購入チェック画面表示
+Route::get('fresh/ordersbuy','App\Http\Controllers\GeneralController@ordersbuy');
+//買い物リストの購入チェック
+Route::post('fresh/ordersbuy','App\Http\Controllers\GeneralController@ordersbuycheck');
+
 
 //冷蔵庫の在庫登録トップ画面表示
 Route::get('fresh/stockaddtop', 'App\Http\Controllers\GeneralController@stockaddtop');
@@ -194,6 +199,9 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+//お知らせ送信履歴を表示する画面
+Route::get('fresh/infohistory', 'App\Http\Controllers\TeamcController@infohistory');
+Route::post('fresh/infohistory', 'App\Http\Controllers\TeamcController@infohistory');
 
 
 //全ユーザー
